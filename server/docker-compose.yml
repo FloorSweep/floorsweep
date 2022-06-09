@@ -1,0 +1,60 @@
+version: '3.3'
+services:
+  testlogs:
+    image: mongo
+    logging:
+      driver: awslogs
+      options:
+        awslogs-region: us-east-1
+        awslogs-group: zzmongo
+        awslogs-create-group: "true"
+
+  zzapi:
+    build:
+      context: .
+      dockerfile: zzapi.Dockerfile
+    image: zzapi:latest
+    ports:
+      - "8081:8081"
+    depends_on:
+      - redis
+      - mongo
+      - postgres
+
+  redis:
+    image: redis:7.0.0-alpine
+    command: redis-server
+    ports:
+      - "6379:6379"
+
+  mongo:
+    image: mongo:5.0.8
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${ZZ_MONGO_USER:?}
+      MONGO_INITDB_ROOT_PASSWORD: ${ZZ_MONGO_PW:?}
+    ports:
+      - 27018:27017
+    volumes:
+      - zzmongo:/data/db
+  postgres:
+    image: postgres:14-alpine
+    ports:
+      - "15432:5432"
+    restart: always
+    environment:
+      POSTGRES_USER: ${ZZ_PG_USER:?}
+      POSTGRES_PASSWORD: ${ZZ_PG_PW:?}
+      POSTGRES_DB: ${ZZ_PG_DBNAME:?}
+    volumes:
+      - zzpg:/var/lib/postgresql/data
+  adminer:
+    image: adminer
+    restart: always
+    depends_on:
+      - postgres
+    ports:
+      - 8080:8080
+volumes:
+  zzpg:
+  zzmongo:
+

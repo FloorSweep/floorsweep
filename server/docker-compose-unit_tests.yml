@@ -1,0 +1,44 @@
+version: '3.3'
+services:
+  zzapi_tests:
+    image: "${DOCKER_REGISTRY:?}/zzapi:${BUILD_ID:?}"
+    entrypoint: /zzapi/packages/server/run-build-tests.sh
+    environment:
+      BUILD_ID: "${BUILD_ID:?}"
+      DEBUG_COLORS: "true"
+    env_file:
+      - .env.example
+    depends_on:
+      - redis
+      - mongo
+      - postgres
+      - zz_agenda_worker
+  zz_agenda_worker:
+    image: "${DOCKER_REGISTRY:?}/zzapi:${BUILD_ID:?}"
+    entrypoint: npm run agenda:start
+    environment:
+      BUILD_ID: "${BUILD_ID:?}"
+    env_file:
+      - .env.example
+    depends_on:
+      - redis
+      - mongo
+      - postgres
+  redis:
+    image: redis:7.0.0-alpine
+    command: redis-server
+    ports:
+      - "6379:6379"
+  mongo:
+    image: mongo:5.0.8
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${ZZ_MONGO_USER:?}
+      MONGO_INITDB_ROOT_PASSWORD: ${ZZ_MONGO_PW:?}
+  postgres:
+    image: postgres:14-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: ${ZZ_PG_USER:?}
+      POSTGRES_PASSWORD: ${ZZ_PG_PW:?}
+      POSTGRES_DB: ${ZZ_PG_DBNAME:?}
+

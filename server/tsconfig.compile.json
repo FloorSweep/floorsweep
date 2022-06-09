@@ -1,0 +1,30 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "allowJs": true,
+    "outDir": "./build",
+    "moduleResolution": "node",
+    "declaration": true,
+    "noResolve": false,
+    "preserveConstEnums": true,
+    "sourceMap": true,
+    "noEmit": false,
+    "emitDeclarationOnly": false,
+    "inlineSources": true,
+    "skipLibCheck": true
+  },
+  "include": [
+    "src/**/*.spec.ts",
+    "src/**/*.ts",
+    "prisma/**/*.spec.ts",
+    "prisma/**/*.ts",
+    // include also js files in the build
+    "src/**/*.js",
+    "prisma/**/*.js"
+  ],
+  "exclude": [
+    // but exclude prisma generated runtime files, as typescript complains...
+    "prisma/generated/prisma"
+  ]
+}

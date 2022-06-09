@@ -1,0 +1,123 @@
+version: '3.3'
+services:
+  zzapi:
+    image: "${DOCKER_REGISTRY:?}/zzapi:${BUILD_ID:?}"
+    ports:
+      - "8083:8081"
+    restart: always
+    depends_on:
+      - redis
+      - mongo
+      - postgres
+      - zz_agenda_worker
+      - zz_zk_websocket
+      - adminer
+    env_file:
+      - .env
+
+    logging:
+      driver: awslogs
+      options:
+        awslogs-region: us-east-1
+        awslogs-group: "${ZZ_DC_LOGS_PREFIX:?}zzapi"
+        awslogs-create-group: "true"
+
+  zz_agenda_worker:
+    image: "${DOCKER_REGISTRY:?}/zzapi:${BUILD_ID:?}"
+    entrypoint: npm run agenda:start
+    restart: always
+    environment:
+      BUILD_ID: "${BUILD_ID:?}"
+    env_file:
+      - .env
+    depends_on:
+      - redis
+      - mongo
+      - postgres
+
+    logging:
+      driver: awslogs
+      options:
+        awslogs-region: us-east-1
+        awslogs-group: "${ZZ_DC_LOGS_PREFIX:?}agenda_worker"
+        awslogs-create-group: "true"
+
+  zz_zk_websocket:
+    image: "${DOCKER_REGISTRY:?}/zzapi:${BUILD_ID:?}"
+    entrypoint: npm run zk:ws
+    restart: always
+    environment:
+      BUILD_ID: "${BUILD_ID:?}"
+    env_file:
+      - .env
+    depends_on:
+      - redis
+      - mongo
+      - postgres
+
+    logging:
+      driver: awslogs
+      options:
+        awslogs-region: us-east-1
+        awslogs-group: "${ZZ_DC_LOGS_PREFIX:?}zk_websocket"
+        awslogs-create-group: "true"
+
+  nginx:
+    image: nginx:1.21.6
+    command: "/bin/sh -c 'while :; do sleep 168h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./data/nginx/${DEPLOYMENT_ENV:?}:/etc/nginx/conf.d
+      - ./data/certbot/conf:/etc/letsencrypt
+      - ./data/certbot/www:/var/www/certbot
+
+  certbot:
+    image: certbot/certbot
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 24h & wait $${!}; done;'"
+    volumes:
+      - ./data/certbot/conf:/etc/letsencrypt
+      - ./data/certbot/www:/var/www/certbot
+
+  redis:
+    image: redis:7.0.0-alpine
+    command: redis-server
+    restart: always
+    ports:
+      - "6379:6379"
+  mongo:
+    image: mongo:5.0.8
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${ZZ_MONGO_USER:?}
+      MONGO_INITDB_ROOT_PASSWORD: ${ZZ_MONGO_PW:?}
+    ports:
+      - 27018:27017
+    volumes:
+      - zzmongo:/data/db
+  postgres:
+    image: postgres:14-alpine
+    # needed for host-runnning backup scripts
+    container_name: server_zz_postgres_1
+    ports:
+      - "15432:5432"
+    restart: always
+    environment:
+      POSTGRES_USER: ${ZZ_PG_USER:?}
+      POSTGRES_PASSWORD: ${ZZ_PG_PW:?}
+      POSTGRES_DB: ${ZZ_PG_DBNAME:?}
+    volumes:
+      - zzpg:/var/lib/postgresql/data
+  adminer:
+    image: adminer
+    restart: always
+    depends_on:
+      - postgres
+    ports:
+      - 8080:8080
+volumes:
+  zzpg:
+  zzmongo:
+

@@ -1,0 +1,30 @@
+{
+  "name": "api-proxy",
+  "version": "1.0.0",
+  "description": "Allows api request without CORS",
+  "main": "index.js",
+  "scripts": {
+    "___comment___": "using .env in package.json, not -inside app- as it is normally used: https://www.genui.com/resources/env-variables-json",
+    "start": "dotenv -- cross-var pm2 start index.js --watch --name \"%PM2_API_PROXY_PROCESS_NAME%\"",
+    "stop": "dotenv cross-var pm2 stop %PM2_API_PROXY_PROCESS_NAME%",
+    "logs": "dotenv cross-var m2 logs %PM2_API_PROXY_PROCESS_NAME%",
+    "restart": "npm run stop && npm run start",
+    "postinstall": "node postinstall.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "cors": "^2.8.4",
+    "cross-env": "^7.0.2",
+    "cross-var": "^1.1.0",
+    "dotenv-cli": "^3.2.0",
+    "express": "^4.16.3",
+    "pm2": "^5.1.0",
+    "replace-in-file": "^6.1.0",
+    "request": "^2.87.0"
+  },
+  "dependencies": {
+    "express-http-proxy": "^1.6.0",
+    "http-proxy": "^1.18.0"
+  }
+}

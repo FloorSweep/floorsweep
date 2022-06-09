@@ -1,0 +1,13 @@
+node_modules
+zzapi.Dockerfile
+.env.local
+.env.development
+.env.example
+.env.prod
+.env.staging
+*.db
+**/*.db
+/build
+/dist
+.env
+coverage

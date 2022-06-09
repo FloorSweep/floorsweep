@@ -1,0 +1,107 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider        = "prisma-client-js"
+  output          = "./generated/prisma"
+}
+
+generator tsed {
+  provider = "tsed-prisma"
+  output   = "./generated/tsed"
+}
+
+//datasource db {
+//  provider = "sqlite"
+//  url      = "file:../dev.db"
+//}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("ZZ_PG_URL")
+}
+
+model Account {
+  id           Int       @id @default(autoincrement())
+  /// @TsED.Email()
+  /// @TsED.Description("User email. This email must be unique!")
+  email         String? @unique
+  // we should never enable someone setting displayName that looks like an address!! so he cannot immitate some other account
+  displayName   String? @unique
+  description   String?
+  websiteUrl   String?
+  address       String @unique
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @default(now())
+  lastSyncedAt  DateTime?
+}
+
+enum NftStatus {
+  committed
+  verified
+  swapping
+}
+
+model Nft {
+  id              Int       @id @default(autoincrement())
+  address         String    @unique
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @default(now())
+  tokenId         Int       @unique
+  imageCID        String
+  metadataCID     String
+  //
+  // zkContentHash
+  //
+  // Description:
+  // ContentHash of metadata
+  //
+  zkContentHash   String
+  creatorAddress  String
+  ownerAddress    String?
+  metadata        Json?
+  order           Order[]
+  isVisible       Boolean   @default(true)
+  status          NftStatus
+  nftObject       Json
+  lastValidatedAt DateTime
+  name            String
+  imgWidth        Int?
+  imgHeight        Int?
+}
+
+model Order {
+  id           Int   @id @default(autoincrement())
+  nft          Nft   @relation(fields: [tokenId], references: [tokenId])
+  tokenId       Int
+  nonce        Int
+  zkCurrencyId Int
+  price        Float
+  zkOrder      Json
+  status       String
+  // save sellerAddress for auditing
+  sellerAddress String
+  // save buyerAddress for auditing
+  buyerAddress String?
+  txId         String? @unique
+  zkCurrencySymbol String @default("ETH")
+}
+
+enum PendingTradeStatus {
+    queued
+    committed
+    finalized
+    rejected
+}
+
+model PendingTrade {
+  id           Int   @id @default(autoincrement())
+  fromAddress  String
+  toAddress    String
+  tokenId      Int
+  txHash       String @unique
+  /// @TsED.Description("save data for auditing etc, mostly used as cache, but for processing data should always be queried from zkSync")
+  txData       Json
+  status       PendingTradeStatus
+  createdAt    DateTime  @default(now())
+}

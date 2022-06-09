@@ -1,0 +1,6 @@
+.DS_Store
+.idea
+ciserver
+server/data
+package-lock.json
+yarn.lock

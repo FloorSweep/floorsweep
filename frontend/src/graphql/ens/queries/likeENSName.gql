@@ -1,0 +1,8 @@
+query likeENSName(
+    $name: String
+) {
+    domains(
+        first: 10,
+        where: {name_starts_with: $name, resolvedAddress_not: null}
+    ){name, resolvedAddress {id}}
+}
