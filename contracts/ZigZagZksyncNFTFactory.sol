@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 
-contract L1_to_ZK 
+contract ZigZagZksyncNFTFactory 
 {
     event tokenStaked(address NFTAddr, uint tokenID, uint serialID);
     event tokenUnstaked(address NFTAddr, uint tokenID, uint serialID);
