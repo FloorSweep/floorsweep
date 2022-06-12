@@ -15,10 +15,10 @@ contract ZigZagZksyncNFTFactory
         address _userAdd;
         address _NFTaddr;
         uint _l1TokenId;
-        uint32 _zksyncTokenId;
+        uint _zksyncTokenId;
     }
 
-    function bridgeToZK(address NFTAddress, uint l1TokenId, uint32 zksyncTokenId) external
+    function bridgeToZK(address NFTAddress, uint l1TokenId, uint zksyncTokenId) external
     {
         IERC721(NFTAddress).safeTransferFrom(msg.sender, address(this), l1TokenId);
         stakedNFTs[zksyncTokenId] = stakedNFT(msg.sender, NFTAddress, l1TokenId, zksyncTokenId);
@@ -45,7 +45,7 @@ contract ZigZagZksyncNFTFactory
         emit tokenUnstaked(nftInstance._NFTaddr, nftInstance._l1TokenId, nftInstance._zksyncTokenId);
     }
 
-    function getNftByZksyncId(uint32 zksyncTokenId) external view returns (stakedNFT memory) {
+    function getNftByZksyncId(uint zksyncTokenId) external view returns (stakedNFT memory) {
         return stakedNFTs[zksyncTokenId];
     }
 }
