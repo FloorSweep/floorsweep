@@ -14,7 +14,7 @@ contract ZigZagZksyncNFTFactory
         address _userAdd;
         address _NFTaddr;
         uint _tokenID;
-        uint _serialID;
+        uint32 _serialID;
     }
 
     function bridgeToZK(address NFTAddress, uint tokenID, uint32 serialId) external
