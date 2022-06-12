@@ -18,6 +18,12 @@ contract ZigZagZksyncNFTFactory
         uint _zksyncTokenId;
     }
 
+    address private _zkSyncAddress;
+
+    constructor( address zkSyncAddress) {
+        _zkSyncAddress = zkSyncAddress;
+    }
+
     function bridgeToZK(address NFTAddress, uint l1TokenId, uint zksyncTokenId) external
     {
         IERC721(NFTAddress).safeTransferFrom(msg.sender, address(this), l1TokenId);
@@ -36,6 +42,9 @@ contract ZigZagZksyncNFTFactory
         uint256 tokenId // this is the zksync token ID
     ) external
     {
+        // Withdrawing allowed only from zkSync
+        require(_msgSender() == _zkSyncAddress, "z"); 
+
         stakedNFT memory nftInstance = stakedNFTs[tokenId];
         IERC721(nftInstance._NFTaddr).safeTransferFrom(address(this), nftInstance._userAdd, nftInstance._l1TokenId);
         
