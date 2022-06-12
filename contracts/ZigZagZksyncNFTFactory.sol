@@ -43,7 +43,7 @@ contract ZigZagZksyncNFTFactory
     ) external
     {
         // Withdrawing allowed only from zkSync
-        require(_msgSender() == _zkSyncAddress, "z"); 
+        require(msg.sender == _zkSyncAddress, "z"); 
 
         stakedNFT memory nftInstance = stakedNFTs[tokenId];
         IERC721(nftInstance._NFTaddr).safeTransferFrom(address(this), nftInstance._userAdd, nftInstance._l1TokenId);
