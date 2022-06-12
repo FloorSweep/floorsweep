@@ -12,7 +12,6 @@ contract ZigZagZksyncNFTFactory
     mapping(uint => stakedNFT) public stakedNFTs;
 
     struct stakedNFT {
-        address _userAdd;
         address _NFTaddr;
         uint _l1TokenId;
         uint _zksyncTokenId;
