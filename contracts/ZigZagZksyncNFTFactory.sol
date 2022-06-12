@@ -26,7 +26,7 @@ contract ZigZagZksyncNFTFactory
     function bridgeToZK(address NFTAddress, uint l1TokenId, uint zksyncTokenId) external
     {
         IERC721(NFTAddress).safeTransferFrom(msg.sender, address(this), l1TokenId);
-        stakedNFTs[zksyncTokenId] = stakedNFT(msg.sender, NFTAddress, l1TokenId, zksyncTokenId);
+        stakedNFTs[zksyncTokenId] = stakedNFT(NFTAddress, l1TokenId, zksyncTokenId);
         emit tokenStaked(NFTAddress, l1TokenId, zksyncTokenId, msg.sender);
     }
 
