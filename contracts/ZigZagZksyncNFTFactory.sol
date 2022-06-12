@@ -5,23 +5,24 @@ import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 
 contract ZigZagZksyncNFTFactory 
 {
-    event tokenStaked(address NFTAddr, uint tokenID, uint serialID);
-    event tokenUnstaked(address NFTAddr, uint tokenID, uint serialID);
+    event tokenStaked(address NFTAddr, uint l1TokenId, uint zksyncTokenId);
+    event tokenUnstaked(address NFTAddr, uint l1TokenId, uint zksyncTokenId);
 
-    mapping(uint32 => stakedNFT) public serialid_to_nft;
+    // key is zksync token ID
+    mapping(uint => stakedNFT) public zksyncNFTs;
 
     struct stakedNFT {
         address _userAdd;
         address _NFTaddr;
-        uint _tokenID;
-        uint32 _serialID;
+        uint _l1TokenId;
+        uint32 _zksyncTokenId;
     }
 
-    function bridgeToZK(address NFTAddress, uint tokenID, uint32 serialId) external
+    function bridgeToZK(address NFTAddress, uint l1TokenId, uint32 zksyncTokenId) external
     {
-        IERC721(NFTAddress).safeTransferFrom(msg.sender, address(this), tokenID);
-        serialid_to_nft[serialId] = stakedNFT(msg.sender, NFTAddress, tokenID, serialId);
-        emit tokenStaked(NFTAddress, tokenID, serialId);
+        IERC721(NFTAddress).safeTransferFrom(msg.sender, address(this), l1TokenId);
+        zksyncNFTs[zksyncTokenId] = stakedNFT(msg.sender, NFTAddress, l1TokenId, zksyncTokenId);
+        emit tokenStaked(NFTAddress, l1TokenId, zksyncTokenId);
     }
 
     // This function must be named mintNFTFromZksync to match the Zksync factory specificiation
@@ -32,15 +33,19 @@ contract ZigZagZksyncNFTFactory
         uint32 creatorAccountId,
         uint32 serialId,
         bytes32 contentHash,
-        uint256 tokenId
+        uint256 tokenId // this is the zksync token ID
     ) external
     {
-        stakedNFT memory nftInstance = serialid_to_nft[serialId];
-        IERC721(nftInstance._NFTaddr).safeTransferFrom(address(this), nftInstance._userAdd, nftInstance._tokenID);
+        stakedNFT memory nftInstance = zksyncNFTs[serialId];
+        IERC721(nftInstance._NFTaddr).safeTransferFrom(address(this), nftInstance._userAdd, nftInstance._l1TokenId);
         
         // free up storage and delete the entry
-        delete serialid_to_nft[serialId];
+        delete zksyncNFTs[tokenId];
 
-        emit tokenUnstaked(nftInstance._NFTaddr, nftInstance._tokenID, nftInstance._serialID);
+        emit tokenUnstaked(nftInstance._NFTaddr, nftInstance._l1TokenId, nftInstance._zksyncTokenId);
+    }
+
+    function getNftByZksyncId(uint32 zksyncTokenId) external view returns (stakedNFT memory) {
+        return zksyncNFTs[zksyncTokenId];
     }
 }
