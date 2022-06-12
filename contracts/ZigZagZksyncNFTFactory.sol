@@ -9,7 +9,7 @@ contract ZigZagZksyncNFTFactory
     event tokenUnstaked(address NFTAddr, uint l1TokenId, uint zksyncTokenId);
 
     // key is zksync token ID
-    mapping(uint => stakedNFT) public zksyncNFTs;
+    mapping(uint => stakedNFT) public stakedNFTs;
 
     struct stakedNFT {
         address _userAdd;
@@ -21,7 +21,7 @@ contract ZigZagZksyncNFTFactory
     function bridgeToZK(address NFTAddress, uint l1TokenId, uint32 zksyncTokenId) external
     {
         IERC721(NFTAddress).safeTransferFrom(msg.sender, address(this), l1TokenId);
-        zksyncNFTs[zksyncTokenId] = stakedNFT(msg.sender, NFTAddress, l1TokenId, zksyncTokenId);
+        stakedNFTs[zksyncTokenId] = stakedNFT(msg.sender, NFTAddress, l1TokenId, zksyncTokenId);
         emit tokenStaked(NFTAddress, l1TokenId, zksyncTokenId);
     }
 
@@ -36,16 +36,16 @@ contract ZigZagZksyncNFTFactory
         uint256 tokenId // this is the zksync token ID
     ) external
     {
-        stakedNFT memory nftInstance = zksyncNFTs[serialId];
+        stakedNFT memory nftInstance = stakedNFTs[tokenId];
         IERC721(nftInstance._NFTaddr).safeTransferFrom(address(this), nftInstance._userAdd, nftInstance._l1TokenId);
         
         // free up storage and delete the entry
-        delete zksyncNFTs[tokenId];
+        delete stakedNFTs[tokenId];
 
         emit tokenUnstaked(nftInstance._NFTaddr, nftInstance._l1TokenId, nftInstance._zksyncTokenId);
     }
 
     function getNftByZksyncId(uint32 zksyncTokenId) external view returns (stakedNFT memory) {
-        return zksyncNFTs[zksyncTokenId];
+        return stakedNFTs[zksyncTokenId];
     }
 }
