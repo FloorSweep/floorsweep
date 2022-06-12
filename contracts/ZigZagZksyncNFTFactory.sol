@@ -46,7 +46,7 @@ contract ZigZagZksyncNFTFactory
         require(msg.sender == _zkSyncAddress, "z"); 
 
         stakedNFT memory nftInstance = stakedNFTs[tokenId];
-        IERC721(nftInstance._NFTaddr).safeTransferFrom(address(this), nftInstance._userAdd, nftInstance._l1TokenId);
+        IERC721(nftInstance._NFTaddr).safeTransferFrom(address(this), recipient, nftInstance._l1TokenId);
         
         // free up storage and delete the entry
         delete stakedNFTs[tokenId];
