@@ -5,8 +5,8 @@ import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 
 contract ZigZagZksyncNFTFactory 
 {
-    event tokenStaked(address NFTAddr, uint l1TokenId, uint zksyncTokenId);
-    event tokenUnstaked(address NFTAddr, uint l1TokenId, uint zksyncTokenId);
+    event tokenStaked(address NFTAddr, uint l1TokenId, uint zksyncTokenId, address staker);
+    event tokenUnstaked(address NFTAddr, uint l1TokenId, uint zksyncTokenId, address unstaker);
 
     // key is zksync token ID
     mapping(uint => stakedNFT) public stakedNFTs;
@@ -27,7 +27,7 @@ contract ZigZagZksyncNFTFactory
     {
         IERC721(NFTAddress).safeTransferFrom(msg.sender, address(this), l1TokenId);
         stakedNFTs[zksyncTokenId] = stakedNFT(msg.sender, NFTAddress, l1TokenId, zksyncTokenId);
-        emit tokenStaked(NFTAddress, l1TokenId, zksyncTokenId);
+        emit tokenStaked(NFTAddress, l1TokenId, zksyncTokenId, msg.sender);
     }
 
     // This function must be named mintNFTFromZksync to match the Zksync factory specificiation
@@ -50,7 +50,7 @@ contract ZigZagZksyncNFTFactory
         // free up storage and delete the entry
         delete stakedNFTs[tokenId];
 
-        emit tokenUnstaked(nftInstance._NFTaddr, nftInstance._l1TokenId, nftInstance._zksyncTokenId);
+        emit tokenUnstaked(nftInstance._NFTaddr, nftInstance._l1TokenId, nftInstance._zksyncTokenId, recipient);
     }
 
     function getNftByZksyncId(uint zksyncTokenId) external view returns (stakedNFT memory) {
